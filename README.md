@@ -1,118 +1,100 @@
-# GC Content Analysis Tool
+# GC Content Analysis with KEGG Pathway Annotation
 
-## Overview
+This script analyzes the GC content of genomic sequences and integrates KEGG pathway annotations to provide a comprehensive view of the data. It works with `.fna` genomic files, calculates GC content, visualizes the distribution, and annotates the data with KEGG pathways.
 
-This script is designed for analyzing bacterial genome data to extract GC content as a feature. GC content is the percentage of guanine (G) and cytosine (C) bases in a DNA sequence, which can provide insights into genomic stability, taxonomy, and other biological properties.
+## Prerequisites
 
-This tool also provides a starting point for computational predictions of safety and toxicity based on genomic features and machine learning models. It is modular and can be extended to include other features, such as virulence factors or antimicrobial resistance genes.
+Before running the script, ensure that you have the necessary packages installed:
 
-## Features
+1. **BioPython** - for parsing genomic sequences.
+2. **Pandas** - for data manipulation.
+3. **Scikit-learn** - for standardization of GC content.
+4. **Matplotlib & Seaborn** - for data visualization.
+5. **Bioservices** - for KEGG pathway annotation.
 
-### Data Collection
-- Accepts local `.fna` or `.fna.gz` files as input.
-- Supports gzipped and uncompressed FASTA formats.
+You can install the required packages using `pip`:
 
-### Feature Extraction
-- Calculates the GC content for each genome file provided.
-- Outputs the results as a CSV file.
-
-### Machine Learning Extension
-- The extracted features can be used as inputs for predictive models like Random Forest classifiers.
-
-### Error Handling
-- Handles invalid or empty sequences gracefully.
-- Debugging messages are provided to ensure the user can identify and resolve issues.
-
-## Installation
-
-### Prerequisites
-- Python 3.8+
-
-### Required Libraries
-- biopython
-- gzip
-- pandas
-
-Install the required libraries using pip:
 ```bash
-pip install biopython pandas
+pip install biopython pandas scikit-learn matplotlib seaborn bioservices
 ```
+
+## Input Data
+
+The script requires genomic files in the `.fna` format (FASTA format). These files should be specified in the `genome_files` list.
+
+Example:
+```python
+genome_files = ["GCF_000005845.2_ASM584v2_genomic.fna", "GCF_000008865.2_ASM886v2_genomic.fna"]
+```
+
+You can use `.fna` files in gzip format as well (e.g., `.fna.gz`).
+
+## Steps Overview
+
+### Step 1: Calculate GC Content
+
+The script calculates the GC content for each genome file. The GC content is the percentage of nucleotides in the sequence that are either guanine (G) or cytosine (C).
+
+### Step 2: Normalize GC Content
+
+The GC content is standardized (normalized) to have a mean of 0 and a standard deviation of 1 using `StandardScaler` from `scikit-learn`.
+
+### Step 3: Visualize GC Content
+
+The distribution of GC content across the genomes is visualized using `matplotlib` and `seaborn` as a histogram with a KDE (Kernel Density Estimate) curve.
+
+### Step 4: KEGG Pathway Annotation
+
+The script integrates KEGG annotations by fetching pathway data for each genome using the KEGG API (`bioservices`). The pathway data is then added to the DataFrame.
+
+### Step 5: Save Results
+
+The results (GC content and KEGG annotations) are saved to a CSV file named `gc_content_with_kegg.csv`.
 
 ## Usage
 
-### Step 1: Prepare Your Data
-Ensure your genome files are in `.fna` or `.fna.gz` format.
+1. Place your `.fna` files in the same directory as this script or provide the correct path in the `genome_files` list.
+2. Run the script:
+    ```bash
+    python gc_content_kegg_analysis.py
+    ```
 
-Example genome assemblies for testing:
-- Genome assembly ASM886v2
-- Genome assembly ASM584v2
+3. The script will output:
+    - The normalized GC content for each genome.
+    - A visualization of the GC content distribution.
+    - A CSV file containing the GC content and KEGG annotations: `gc_content_with_kegg.csv`.
 
-### Step 2: Modify the Script
-Replace the placeholder file paths in the `genome_files` list with the paths to your local genome files:
-```python
-genome_files = ["path_to_your_file1.fna.gz", "path_to_your_file2.fna.gz"]
+### Example Output Files:
+- `gc_content_results3.csv`: Contains GC content values for each genome.
+- `gc_content_with_kegg.csv`: Contains GC content and KEGG annotations for each genome.
+
+## Example Output (CSV)
+
+`gc_content_results3.csv`:
+```
+Genome,GC_Content,GC_Content_Normalized
+GCF_000005845.2_ASM584v2_genomic.fna,50.5,0.12
+GCF_000008865.2_ASM886v2_genomic.fna,47.3,-0.67
 ```
 
-### Step 3: Run the Script
-Execute the script:
-```bash
-python gc_content_analysis.py
+`gc_content_with_kegg.csv`:
+```
+Genome,GC_Content,GC_Content_Normalized,KEGG_Annotations
+GCF_000005845.2_ASM584v2_genomic.fna,50.5,0.12,"Pathway 1, Pathway 2"
+GCF_000008865.2_ASM886v2_genomic.fna,47.3,-0.67,"Pathway 3, Pathway 4"
 ```
 
-### Step 4: View the Results
-- The extracted GC content values are printed to the console.
-- A CSV file (`gc_content_results.csv`) containing the results is saved in the current working directory.
+## Notes
 
-## Output Format
+- The KEGG annotation part requires a valid connection to the KEGG API and proper mapping of genome identifiers to KEGG-compatible IDs. In this example, `hsa` is used as a placeholder (for human genomes). You'll need to adapt the logic to map your genomic files to KEGG IDs.
+- The script assumes the genome files are in FASTA format. If you encounter any issues with file formats, check that your files are properly formatted.
 
-### Console Output
-The script provides real-time feedback:
-```
-Processing file: path_to_your_file1.fna.gz
-GC Content for path_to_your_file1.fna.gz: 50.25
-...
-```
+## Future Enhancements
 
-### CSV Output
-The output CSV file contains two columns:
-- Genome: The name of the genome file.
-- GC_Content: The calculated GC content percentage.
+- **Automated Genome ID Mapping**: The mapping from genomic file names to KEGG IDs could be enhanced to support more genomes automatically.
+- **Expanded Data Analysis**: The script can be extended to analyze additional genomic features, such as nucleotide composition, gene count, and more.
+- **Pathway Visualization**: Integrating a method to visualize the KEGG pathways could be a future addition, providing a graphical representation of the biological pathways.
 
-Example:
-```
-Genome,GC_Content
-path_to_your_file1.fna.gz,50.25
-path_to_your_file2.fna.gz,48.67
-```
+## License
 
-## Extending the Tool
-
-### (i) Computational Prediction of Safety and Toxicity
-
-**Data Collection:** Use this tool to extract genomic features from bacterial genomes.
-
-**Feature Extraction:** Extend the script to include:
-- Virulence factors (e.g., using VFDB).
-- Antimicrobial resistance genes (e.g., using CARD).
-
-**Machine Learning Models:** Use extracted features as input to predictive models.
-
-### (ii) Methods and Models
-- **Bioinformatics Tools:** Integrate BLAST or other annotation tools to identify safety/toxicity markers.
-- **Deep Learning:** For complex data, consider using models like Convolutional Neural Networks (CNNs).
-
-### (iii) Manual Annotation
-- Use tools like BLAST to manually annotate important genes.
-- Include specific annotations for safety markers or resistance genes in the dataset.
-
-## Known Limitations
-- Requires valid `.fna` or `.fna.gz` genome files.
-- GC content calculation assumes sequences are properly formatted.
-- Annotation features (e.g., virulence factors) are not included in this basic version.
-
-## Support
-For issues or questions, contact `shyamalimashreyadas@gmail.com`.
-
-## References
-- [Biopython Documentation](https://biopython.org/wiki/Documentation)
-- [NCBI Genome Assembly Information](https://www.ncbi.nlm.nih.gov/assembly)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
